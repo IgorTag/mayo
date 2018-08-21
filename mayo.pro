@@ -22,6 +22,7 @@ HEADERS += \
     src/3rdparty/fougtools/qttools/gui/item_view_utils.h \
     src/3rdparty/fougtools/qttools/gui/proxy_styled_item_delegate.h \
     src/3rdparty/fougtools/qttools/gui/qwidget_utils.h \
+    src/3rdparty/scope_guard/scope_guard.hpp \
     src/application.h \
     src/application_item.h \
     src/application_item_selection_model.h \
@@ -44,6 +45,7 @@ HEADERS += \
     src/gpx_xde_document_item.h \
     src/gui_application.h \
     src/gui_document.h \
+    src/io_base.h \
     src/libtree.h \
     src/mainwindow.h \
     src/math_utils.h \
@@ -70,6 +72,12 @@ HEADERS += \
     src/widget_occ_view.h \
     src/widget_properties_editor.h \
     src/xde_document_item.h \
+    src/io_stl.h \
+    src/io_step.h \
+    src/occ_progress.h \
+    src/io_iges.h \
+    src/io_occ_brep.h \
+    src/scope_guard.h
 
 SOURCES += \
     src/3rdparty/fougtools/occtools/qt_utils.cpp \
@@ -99,6 +107,7 @@ SOURCES += \
     src/gpx_xde_document_item.cpp \
     src/gui_application.cpp \
     src/gui_document.cpp \
+    src/io_base.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/math_utils.cpp \
@@ -124,6 +133,11 @@ SOURCES += \
     src/widget_occ_view.cpp \
     src/widget_properties_editor.cpp \
     src/xde_document_item.cpp \
+    src/io_stl.cpp \
+    src/io_step.cpp \
+    src/occ_progress.cpp \
+    src/io_iges.cpp \
+    src/io_occ_brep.cpp
 
 include(src/3rdparty/fougtools/qttools/task/qttools_task.pri)
 

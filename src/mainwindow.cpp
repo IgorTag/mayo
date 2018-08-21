@@ -457,7 +457,7 @@ void MainWindow::runImportTask(
     task->run([=]{
         QTime chrono;
         chrono.start();
-        const Application::IoResult result =
+        const IoBase::Result result =
                 Application::instance()->importInDocument(
                     doc, format, filepath, &task->progress());
         QString msg;
@@ -474,7 +474,7 @@ void MainWindow::runImportTask(
 }
 
 void MainWindow::runExportTask(
-        const std::vector<DocumentItem*>& docItems,
+        Span<const ApplicationItem> spanAppItem,
         Application::PartFormat format,
         const Application::ExportOptions& opts,
         const QString& filepath)
@@ -483,9 +483,9 @@ void MainWindow::runExportTask(
     task->run([=]{
         QTime chrono;
         chrono.start();
-        const Application::IoResult result =
+        const IoBase::Result result =
                 Application::instance()->exportDocumentItems(
-                    docItems, format, opts, filepath, &task->progress());
+                    spanAppItem, format, opts, filepath, &task->progress());
         QString msg;
         if (result) {
             msg = tr("Export time '%1': %2ms")
@@ -514,8 +514,8 @@ void MainWindow::exportSelectedItems()
         lastSettings.openDir = QFileInfo(filepath).canonicalPath();
         const Application::PartFormat format =
                 Internal::partFormatFromFilter(lastSettings.selectedFilter);
-        const std::vector<DocumentItem*> vecDocItem =
-                GuiApplication::instance()->selectionModel()->selectedDocumentItems();
+        const Span<const ApplicationItem> spanAppItem =
+                GuiApplication::instance()->selectionModel()->selectedItems();
         if (Application::hasExportOptionsForFormat(format)) {
 #ifdef HAVE_GMIO
             auto dlg = new DialogExportOptions(this);
@@ -527,12 +527,12 @@ void MainWindow::exportSelectedItems()
             });
             qtgui::QWidgetUtils::asyncDialogExec(dlg);
 #else
-            this->runExportTask(vecDocItem, format, defaultOpts, filepath);
+            this->runExportTask(spanAppItem, format, defaultOpts, filepath);
             Internal::ImportExportSettings::save(lastSettings);
 #endif
         }
         else {
-            this->runExportTask(vecDocItem, format, defaultOpts, filepath);
+            this->runExportTask(spanAppItem, format, defaultOpts, filepath);
             Internal::ImportExportSettings::save(lastSettings);
         }
     }
@@ -847,6 +847,8 @@ void MainWindow::updateControlsActivation()
     const QWidget* currMainPage = m_ui->stack_Main->currentWidget();
     const int appDocumentsCount = Application::instance()->documentCount();
     const bool appDocumentsEmpty = appDocumentsCount == 0;
+    Span<const ApplicationItem> spanSelectedAppItem =
+            GuiApplication::instance()->selectionModel()->selectedItems();
     QWidget* newMainPage =
             appDocumentsEmpty ? m_ui->page_MainHome : m_ui->page_MainControl;
     if (currMainPage != newMainPage)
@@ -864,12 +866,10 @@ void MainWindow::updateControlsActivation()
                 !appDocumentsEmpty && currentDocIndex > 0);
     m_ui->actionNextDoc->setEnabled(
                 !appDocumentsEmpty && currentDocIndex < appDocumentsCount - 1);
-    m_ui->actionExportSelectedItems->setEnabled(!appDocumentsEmpty);
+    m_ui->actionExportSelectedItems->setEnabled(!spanSelectedAppItem.empty());
     m_ui->actionShowHideLeftSidebar->setEnabled(newMainPage != m_ui->page_MainHome);
     m_ui->combo_GuiDocuments->setEnabled(!appDocumentsEmpty);
 
-    Span<const ApplicationItem> spanSelectedAppItem =
-            GuiApplication::instance()->selectionModel()->selectedItems();
     const ApplicationItem firstAppItem =
             !spanSelectedAppItem.empty() ?
                 spanSelectedAppItem.at(0) : ApplicationItem();
